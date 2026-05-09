@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "Worker": {
+      "title": "Worker",
+      "description": "Details of a worker in the system",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "role", "createdAt"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record for a worker",
+      "type": "object",
+      "properties": {
+        "workerId": { "type": "string" },
+        "workerName": { "type": "string" },
+        "date": { "type": "string", "description": "YYYY-MM-DD" },
+        "inTime": { "type": "string", "format": "date-time" },
+        "outTime": { "type": "string", "format": "date-time" },
+        "overtimeMinutes": { "type": "number" },
+        "totalMinutes": { "type": "number" },
+        "status": { "type": "string", "enum": ["present", "absent"] },
+        "hasReport": { "type": "boolean" }
+      },
+      "required": ["workerId", "workerName", "date", "inTime", "status"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Daily work report from a worker",
+      "type": "object",
+      "properties": {
+        "attendanceId": { "type": "string" },
+        "workerId": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["attendanceId", "workerId", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/workers/{workerId}": {
+      "schema": "Worker",
+      "description": "Collection of workers"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "Attendance",
+      "description": "Collection of attendance records"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Collection of work reports"
+    }
+  }
+}

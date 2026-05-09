@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Worker validation
+    function isValidWorker(data) {
+      return data.keys().hasAll(['name', 'phone', 'role', 'createdAt'])
+        && data.keys().size() == 4
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 15
+        && data.role is string && data.role.size() <= 100;
+    }
+
+    // Attendance validation
+    function isValidAttendance(data) {
+      return data.keys().hasAll(['workerId', 'workerName', 'date', 'inTime', 'status'])
+        && data.workerId is string && isValidId(data.workerId)
+        && data.date is string && data.date.size() == 10
+        && data.status in ['present', 'absent'];
+    }
+
+    // Report validation
+    function isValidReport(data) {
+      return data.keys().hasAll(['attendanceId', 'workerId', 'content', 'createdAt'])
+        && data.attendanceId is string && isValidId(data.attendanceId)
+        && data.workerId is string && isValidId(data.workerId)
+        && data.content is string && data.content.size() > 0;
+    }
+
+    match /workers/{workerId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidWorker(incoming());
+      allow update: if isSignedIn() && isValidWorker(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidAttendance(incoming());
+      allow update: if isSignedIn(); // Allow updating for in/out and report status
+      allow delete: if isSignedIn();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidReport(incoming());
+      allow update: if isSignedIn() && isValidReport(incoming());
+      allow delete: if isSignedIn();
+    }
+  }
+}

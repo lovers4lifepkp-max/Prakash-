@@ -1,0 +1,6 @@
+{
+  "name": "WorkFlow Attendance",
+  "description": "Professional attendance management system with worker tracking, in/out logging, overtime calculation, and mobile reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
